@@ -41,6 +41,71 @@ characters for our salt.
 More info on the Werkzeug helper function generate_password_hash() can be found here: https://werkzeug.palletsprojects.com/en/1.0.x/utils/#module-werkzeug.security
 
 
+Authenticating Users with Flask-Login
+
+The next step is now to make sure the "/secrets" route is no longer accessible unless one is authenticated (aka logged in)
+This is done via a function decorator "@login_required" from the flask_login module.
+We apply this decorator to the route "/secrets" and "/download".
+
+![image](https://user-images.githubusercontent.com/55893421/117725202-cefe4f00-b1b2-11eb-9ae7-9dfb6b468327.png)
+
+![image](https://user-images.githubusercontent.com/55893421/117725252-e2111f00-b1b2-11eb-9f27-88d13334061c.png)
+
+Once we got our "sensitive" routes secured, we must implement the login route.
+This is done configuring our application by first creating an instance of the LoginManager class.
+![image](https://user-images.githubusercontent.com/55893421/117725814-b3477880-b1b3-11eb-9ead-1ae1af5faf3e.png)
+
+Once the actual application object has been created, we can configure it for login with:
+![image](https://user-images.githubusercontent.com/55893421/117725848-bb9fb380-b1b3-11eb-99a6-fa632e8a0747.png)
+
+Flask-Login uses sessions for authentication. This means we must set the secret key on our application, otherwise Flask will give us an error message.
+
+After configuring our app, we need to create a user loader function. The purpose of such function is to reload the user from its user id
+![image](https://user-images.githubusercontent.com/55893421/117726634-d7578980-b1b4-11eb-95cc-2f4ec9929f64.png)
+
+Afterwards, we need to implement a UserMixin, which is basically a class with properties and functions inherent to all user sessions. 
+We can import this class from the flask_login module and we pass it as a parameter in our User class (therefore making our User class inherit 
+all those methods and properties from UserMixin). The Mixin is much simpler way of implementing methods for the user authentication as we 
+provide inheritance of the class to our User class.
+
+![image](https://user-images.githubusercontent.com/55893421/117727064-88f6ba80-b1b5-11eb-8fff-0e0125da5c8a.png)
+
+Now, we can start implementing our login route.
+
+First, we check to see if our user is authenticated upon reaching the login page. If he/she is, then he/she is redirected to the secret page.
+However, if the user just logged in by entering his/her credentials, then we extract those from a form. Using the email entered, we try to find 
+the user inside our database.
+
+If the user is not found (no corresponding email is found in the database), we will flash a message accordingly telling so the user.
+Else if the user is found, we need to check if his password is correct , otherwise we flash a message on the screen telling the user about it.
+If the user is found on the database via its email and the password entered is correct, then we log in the user by passing our user obhect found
+in the database into the function login_user() which starts the user session. That method comes from the flask_login module.
+
+
+![image](https://user-images.githubusercontent.com/55893421/117733982-7d5cc100-b1c0-11eb-9dec-ac800146b73b.png)
+
+
+Flask Flash Messages
+
+Sometimes, we want to inform the user that something went wrong (password or email) with their log in attempt. In that case, it is a good idea
+to use Flask Flash messages. They are messages that get sent to the template to be rendered just once. And they disappear when the page is reloaded.
+To do that, we just need to put some Jinja code relating to Flask Flash templates in our "login.html" file:
+
+![image](https://user-images.githubusercontent.com/55893421/117734461-84d09a00-b1c1-11eb-8148-7116bb817ff0.png)
+
+Then in our Flask server we can call the function flash when we need to flash message on the login route. See photo above with the login route.
+The method takes an argument which is the message we want to flash.
+
+
+Passing Authentication Status to Templates
+
+When a user is logged in, the home page should not show the login/register buttons. The navigation bar should not show Register or Login either.
+We can therefore, check if our user is authenticated directly in the html file where our navigation bar appears. With a set of if/else statement and
+conditional rendering with Jinja we can decide which list item should not be displayed:
+
+![image](https://user-images.githubusercontent.com/55893421/117735285-286e7a00-b1c3-11eb-870f-c54c23aa2a06.png)
+
+
 
 
 
